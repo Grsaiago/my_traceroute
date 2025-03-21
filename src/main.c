@@ -8,6 +8,10 @@ int main(int argc, char *argv[]) {
 
 	initialize_program_conf(&conf);
 	parse_arguments(&conf, argc, argv);
+	if (check_user_permission(&conf) != true) {
+		dprintf(STDERR_FILENO, "error: you don't have the required permissions to run this program\n");
+		return (EXIT_FAILURE);
+	}
 	install_signal_handlers();
 	if (validate_or_resolve_address(&conf, (struct sockaddr *)&socket_confs) == -1) {
 		return (-1);
@@ -45,12 +49,12 @@ int	event_loop(ProgramConf *conf) {
 		gettimeofday(&last_message.recv_at, NULL);
 		record_new_response(conf, &last_message);
 		print_icmp_message(conf, &last_message);
-		if ((conf->flags.count != (uint32_t)-1) && (conf->msg_seq + 1 >= conf->flags.count)) {
-			my_ping_should_continue = false;
-		} else {
-			sleep(conf->flags.packet_interval);
-		}
 	}
 	print_footer(conf);
 	return (0);
+}
+
+bool check_user_permission(ProgramConf *conf) {
+	(void)conf;
+	return (getuid() == 0);
 }

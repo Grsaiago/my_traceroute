@@ -20,11 +20,6 @@
 # include <float.h>
 # include <math.h>
 
-typedef enum e_IpVersion {
-	IPV4 = AF_INET,
-	IPV6 = AF_INET6,
-}	IpVersion;
-
 typedef struct s_IcmpReply {
 	struct iphdr	iphdr;
 	struct icmp	icmp;
@@ -43,17 +38,18 @@ typedef struct s_Socket {
 	int			fd;
 	struct sockaddr_storage	remote_addr;
 	struct sockaddr_in	*ipv4_addr;
-	struct sockaddr_in6	*ipv6_addr;
 	socklen_t		addr_struct_size;
 }	Socket;
 
 /* ping program */
+#define DEFAULT_MAX_TTL 30
 #define DEFAULT_TTL 200
 typedef struct s_ExecutionFlags {
-	bool		so_debug; // -d --debug
-	uint32_t	first_ttl; // -f --first
+	bool		resolve_ip_name; // -n --no-ip-to-host-resolve
 	uint32_t	max_ttl; // -m --max-hops
-	uint32_t	packet_interval; // -i --interval
+	uint32_t	first_ttl; // -f --first
+	bool		icmp; // -I --icmp
+	bool		so_debug; // -d --debug
 }	ExecutionFlags;
 
 typedef struct s_PingPacketStats {
@@ -66,7 +62,6 @@ typedef struct s_PingPacketStats {
 }	PingPacketStats;
 
 typedef struct s_ProgramConf {
-	IpVersion	ip_version;
 	uint64_t	msg_seq;
 	Socket		main_socket;
 	ExecutionFlags	flags;
@@ -84,6 +79,7 @@ typedef struct s_PrintMetrcis {
 
 
 /* functions */
+bool	check_user_permission(ProgramConf *conf);
 void	install_signal_handlers(void);
 void	initialize_program_conf(ProgramConf *conf);
 int	new_raw_socket(Socket *res, struct sockaddr_storage *remote_addr, ExecutionFlags *flags);

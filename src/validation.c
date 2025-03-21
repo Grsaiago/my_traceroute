@@ -4,11 +4,12 @@ int	validate_or_resolve_address(ProgramConf *conf, struct sockaddr *res) {
 	struct addrinfo	*getaddr_result;
 	struct addrinfo	getaddr_hints;
 	int		error_value;
+	struct sockaddr_in	*ipv4;
 
 	getaddr_result = NULL;
 	// fill hints struct
 	memset(&getaddr_hints, 0, sizeof(struct addrinfo));
-	getaddr_hints.ai_family = conf->ip_version; // since they're renamings of either AF_INET or AF_INET6
+	getaddr_hints.ai_family = AF_INET; // since they're renamings of either AF_INET or AF_INET6
 	getaddr_hints.ai_socktype = 0; // any socket type
 	getaddr_hints.ai_protocol = 0; // any protocol
 	
@@ -19,15 +20,9 @@ int	validate_or_resolve_address(ProgramConf *conf, struct sockaddr *res) {
 		return (-1);
 	}
 	memcpy(res, getaddr_result->ai_addr, getaddr_result->ai_addrlen);
-	if (conf->ip_version == IPV4) {
-		struct sockaddr_in	*ipv4 = (struct sockaddr_in *)getaddr_result->ai_addr;
-		inet_ntop(conf->ip_version, &(ipv4->sin_addr),
-		     conf->resolved_addr, sizeof(conf->resolved_addr));
-	} else {
-		struct sockaddr_in6	*ipv6 = (struct sockaddr_in6 *)getaddr_result->ai_addr;
-		inet_ntop(conf->ip_version, &(ipv6->sin6_addr),
-		     conf->resolved_addr, sizeof(conf->resolved_addr));
-	}
+	ipv4 = (struct sockaddr_in *)getaddr_result->ai_addr;
+	inet_ntop(AF_INET, &(ipv4->sin_addr),
+	     conf->resolved_addr, sizeof(conf->resolved_addr));
 	freeaddrinfo(getaddr_result);
 	return (0);
 }

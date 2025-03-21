@@ -9,16 +9,10 @@ static uint32_t	calculate_packet_loss_percent(const PingPacketStats *stats);
 static double	calculate_stdandard_deviation(const PingPacketStats *stats);
 
 void	print_header(ProgramConf *conf) {
-	if (conf->flags.verbose) {
-		int pid = getpid();
-		printf("PING %s (%s): %ld data bytes, id %#x = %d\n",
-			conf->program_arg, conf->resolved_addr,
-			sizeof(struct iphdr) + sizeof(struct icmp), pid, pid);
-	} else {
-		printf("PING %s (%s): %ld data bytes\n",
-			conf->program_arg, conf->resolved_addr,
-			sizeof(struct iphdr) + sizeof(struct icmp));
-	}
+	(void)conf;
+	printf("PING %s (%s): %ld data bytes\n",
+		conf->program_arg, conf->resolved_addr,
+		sizeof(struct iphdr) + sizeof(struct icmp));
 }
 
 void	print_footer(ProgramConf *conf) {
@@ -64,10 +58,11 @@ static void	print_generic_ok(ProgramConf *conf, IcmpReply *message) {
 // No support for ipv6, only ipv4
 static void	print_time_exceded_reply(ProgramConf *conf, IcmpReply *message) {
 	char		resolved_addr[INET6_ADDRSTRLEN] = {0};
-	struct in_addr ipv4;
+	struct in_addr	ipv4;
 
+	(void)conf;
 	ipv4.s_addr = message->iphdr.saddr;
-	inet_ntop(conf->ip_version, &(ipv4.s_addr),
+	inet_ntop(AF_INET, &(ipv4.s_addr),
 	     resolved_addr, sizeof(resolved_addr));
 	printf("%d bytes from (%s): Time to live exceeded\n",
 		ntohs(message->iphdr.tot_len), resolved_addr);
