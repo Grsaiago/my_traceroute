@@ -9,9 +9,9 @@ int	validate_or_resolve_address(ProgramConf *conf, struct sockaddr *res) {
 	getaddr_result = NULL;
 	// fill hints struct
 	memset(&getaddr_hints, 0, sizeof(struct addrinfo));
-	getaddr_hints.ai_family = AF_INET; // since they're renamings of either AF_INET or AF_INET6
-	getaddr_hints.ai_socktype = 0; // any socket type
-	getaddr_hints.ai_protocol = 0; // any protocol
+	getaddr_hints.ai_family = AF_INET;
+	getaddr_hints.ai_socktype = 0;
+	getaddr_hints.ai_protocol = 0;
 	
 	// call getaddrinfo and get the found/validated address and feed it to program_conf
 	error_value = getaddrinfo(conf->program_arg, NULL, &getaddr_hints, &getaddr_result);

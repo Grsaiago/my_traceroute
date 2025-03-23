@@ -10,8 +10,9 @@ static double	calculate_stdandard_deviation(const PingPacketStats *stats);
 
 void	print_header(ProgramConf *conf) {
 	(void)conf;
-	printf("PING %s (%s): %ld data bytes\n",
+	printf("traceroute to %s (%s), %d hops max, %ld data bytes\n",
 		conf->program_arg, conf->resolved_addr,
+		conf->flags.max_ttl,
 		sizeof(struct iphdr) + sizeof(struct icmp));
 }
 
