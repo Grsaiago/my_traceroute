@@ -7,6 +7,7 @@
 # include <arpa/inet.h>
 # include <netinet/ip.h>
 # include <netinet/ip_icmp.h>
+# include <netinet/udp.h>
 # include <string.h>
 # include <stdbool.h>
 # include <stdio.h>
@@ -33,17 +34,32 @@ typedef struct s_IcmpMessage {
 	struct timeval	timestamp;
 }	IcmpMessage;
 
+typedef enum e_TracerouteMessagePayloadType {
+	TR_ICMP_PAYLOAD,
+	TR_UDP_PAYLOAD,
+}	TracerouteMessagePayloadType;
+
+typedef union s_TracerouteMessagePayload {
+	struct icmp	icmp;
+	struct udphdr	udp;
+}	TracerouteMessagePayload;
+
+typedef struct s_TracerouteMessage {
+	struct iphdr			iphdr;
+	TracerouteMessagePayloadType	message_type;
+	TracerouteMessagePayload	payload;
+}	TracerouteMessage;
+
 /* socket */
 typedef struct s_Socket {
 	int			fd;
-	struct sockaddr_storage	remote_addr;
-	struct sockaddr_in	*ipv4_addr;
+	struct sockaddr_in	remote_addr;
 	socklen_t		addr_struct_size;
 }	Socket;
 
-/* ping program */
+/* traceroute program */
 #define DEFAULT_MAX_TTL 30
-#define DEFAULT_TTL 200
+#define TR_STARTING_TTL 1
 typedef struct s_ExecutionFlags {
 	bool		resolve_ip_name; // -n --no-ip-to-host-resolve
 	uint32_t	max_ttl; // -m --max-hops
@@ -82,7 +98,7 @@ typedef struct s_PrintMetrcis {
 bool	check_user_permission(ProgramConf *conf);
 void	install_signal_handlers(void);
 void	initialize_program_conf(ProgramConf *conf);
-int	new_raw_socket(Socket *res, struct sockaddr_storage *remote_addr, ExecutionFlags *flags);
+int	new_socket(Socket *res, struct sockaddr_in *remote_addr, ExecutionFlags *flags);
 /* parse functions */
 int		parse_arguments(ProgramConf *conf, int argc, char *argv[]);
 // Performs dns lookup/ip validation for address using getaddrinfo and places found sockaddr_* in struct res
