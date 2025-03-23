@@ -1,19 +1,16 @@
 #include "../include/my_ping.h"
+#include <unistd.h>
 
 static int set_socket_flags(int sock, ExecutionFlags *flags);
 
-int	new_raw_socket(Socket *res, struct sockaddr_storage *remote_addr, ExecutionFlags *flags) {
+int	new_socket(Socket *res, struct sockaddr_in *remote_addr, ExecutionFlags *flags) {
 	int	sock;
 
 	// we don't need a raw socket because:
 	// https://sturmflut.github.io/linux/ubuntu/2015/01/17/unprivileged-icmp-sockets-on-linux/
 	// We actually do, because without it the kernel sets the ttl of the iphdr to 0
 	// to have it run without sudo, we need to run 'sudo setcap cap_net_raw+ep ./my_ping'
-	if (flags->icmp) {
-		sock = socket(AF_INET, SOCK_DGRAM, 0);
-	} else {
-		sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-	}
+	sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
 	if (sock == -1) {
 		dprintf(STDERR_FILENO, "error on socket creation: %s\n", strerror(errno));
 		return (-1);
@@ -23,8 +20,14 @@ int	new_raw_socket(Socket *res, struct sockaddr_storage *remote_addr, ExecutionF
 	}
 	res->fd = sock;
 	res->remote_addr = *remote_addr;
-	res->ipv4_addr = (struct sockaddr_in *)&res->remote_addr;
 	res->addr_struct_size = sizeof(struct sockaddr_in);
+	if (flags->icmp) {
+		res->remote_addr.sin_port = 5500;
+		if (bind(sock, (struct sockaddr *)&res->remote_addr, sizeof(res->remote_addr)) == -1) {
+			dprintf(STDERR_FILENO, "error on bind: %s", strerror(errno));
+			return (-1);
+		}
+	}
 	return (0);
 }
 
@@ -38,13 +41,11 @@ static int set_socket_flags(int sock, ExecutionFlags *flags) {
 			return (-1);
 		}
 	}
-	if (flags->max_ttl != DEFAULT_TTL) {
-		value = flags->max_ttl;
-		// TODO: Add an option for ipv6
-		if (setsockopt(sock, IPPROTO_IP, IP_TTL, &value, sizeof(int)) != 0) {
-			dprintf(STDERR_FILENO, "error on setsockopt IP_TTL: %s\n", strerror(errno));
-			return (-1);
-		}
+	// set ttl to 1 or to specified by flag
+	value = flags->first_ttl;
+	if (setsockopt(sock, IPPROTO_IP, IP_TTL, &value, sizeof(int)) != 0) {
+		dprintf(STDERR_FILENO, "error on setsockopt IP_TTL: %s\n", strerror(errno));
+		return (-1);
 	}
 	return (0);
 }
