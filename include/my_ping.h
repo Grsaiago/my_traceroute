@@ -39,9 +39,17 @@ typedef enum e_TracerouteMessagePayloadType {
 	TR_UDP_PAYLOAD,
 }	TracerouteMessagePayloadType;
 
-typedef union s_TracerouteMessagePayload {
+typedef struct s_IcmpPayload {
 	struct icmp	icmp;
+}	IcmpPayload;
+
+typedef struct s_UdpPayload {
 	struct udphdr	udp;
+}	UdpPayload;
+
+typedef union s_TracerouteMessagePayload {
+	IcmpPayload	icmp;
+	UdpPayload	udp;
 }	TracerouteMessagePayload;
 
 typedef struct s_TracerouteMessage {
@@ -103,12 +111,11 @@ int	new_socket(Socket *res, struct sockaddr_in *remote_addr, ExecutionFlags *fla
 int		parse_arguments(ProgramConf *conf, int argc, char *argv[]);
 // Performs dns lookup/ip validation for address using getaddrinfo and places found sockaddr_* in struct res
 int	validate_or_resolve_address(ProgramConf *conf, struct sockaddr *res);
-/* icmp messaging */
-unsigned short	calculate_checksum(void *b, int len);
-IcmpMessage	new_icmp_echo_message(ProgramConf *conf);
-int		send_icmp_message(Socket *sock, IcmpMessage *message);
-int		recv_icmp_message(Socket *sock, IcmpReply *message);
-double		calculate_rtt_in_ms(const struct timeval *start, const struct timeval *end);
+/* messaging */
+TracerouteMessage	new_message(ProgramConf *conf, TracerouteMessagePayloadType message_type);
+int			send_message(ProgramConf *conf, TracerouteMessage *message);
+int			recv_message(Socket *sock, IcmpReply *message);
+double			calculate_rtt_in_ms(const struct timeval *start, const struct timeval *end);
 /* record messages */
 void	record_new_response(ProgramConf *conf, IcmpReply *message);
 /* printing */

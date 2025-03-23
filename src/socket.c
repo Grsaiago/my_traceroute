@@ -1,4 +1,5 @@
 #include "../include/my_ping.h"
+#include <netinet/in.h>
 #include <unistd.h>
 
 static int set_socket_flags(int sock, ExecutionFlags *flags);
@@ -21,19 +22,24 @@ int	new_socket(Socket *res, struct sockaddr_in *remote_addr, ExecutionFlags *fla
 	res->fd = sock;
 	res->remote_addr = *remote_addr;
 	res->addr_struct_size = sizeof(struct sockaddr_in);
-	if (flags->icmp) {
-		res->remote_addr.sin_port = 5500;
-		if (bind(sock, (struct sockaddr *)&res->remote_addr, sizeof(res->remote_addr)) == -1) {
-			dprintf(STDERR_FILENO, "error on bind: %s", strerror(errno));
-			return (-1);
-		}
-	}
+	/*if (!flags->icmp) {*/
+	/*	res->remote_addr.sin_port = 5500;*/
+	/*	if (bind(sock, (struct sockaddr *)&res->remote_addr, sizeof(res->remote_addr)) == -1) {*/
+	/*		dprintf(STDERR_FILENO, "error on bind: %s", strerror(errno));*/
+	/*		return (-1);*/
+	/*	}*/
+	/*}*/
 	return (0);
 }
 
 static int set_socket_flags(int sock, ExecutionFlags *flags) {
 	int	value;
 
+	value = 1;
+	if (setsockopt(sock, IPPROTO_TP, IP_HDRINCL, &value, sizeof(int)) != 0) {
+		dprintf(STDERR_FILENO, "error on setsockopt IP_HDRINCL: %s\n", strerror(errno));
+		return (-1);
+	}
 	if (flags->so_debug == true) {
 		value = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_DEBUG, &value, sizeof(int)) != 0) {
