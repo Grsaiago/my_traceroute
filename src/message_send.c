@@ -6,14 +6,14 @@ static int	send_icmp_message(Socket *sock, IcmpPayload *message, struct iphdr *i
 int send_message(ProgramConf *conf, TracerouteMessage *message) {
 	switch (message->message_type) {
 		case (TR_UDP_PAYLOAD):
-			if (send_udp_message(&conf->main_socket,
+			if (send_udp_message(&conf->sock_pair.out_sock,
 				&message->payload.udp,
 				&message->iphdr) == -1) {
 				return (-1);
 			}
 			break;
 		case (TR_ICMP_PAYLOAD):
-			if (send_icmp_message(&conf->main_socket,
+			if (send_icmp_message(&conf->sock_pair.out_sock,
 				&message->payload.icmp,
 				&message->iphdr) == -1) {
 				return (-1);
@@ -32,7 +32,7 @@ static int	send_udp_message(Socket *sock, UdpPayload *message, struct iphdr *iph
 	err_value = sendto(sock->fd, (void *)sendbuff, sizeof(sendbuff), 0,
 		    (const struct sockaddr *)&sock->remote_addr,
 		    sock->addr_struct_size);
-	if (err_value < (int)sock->addr_struct_size) {
+	if (err_value < (int)sizeof(sendbuff)) {
 		if (err_value == -1) {
 			dprintf(STDERR_FILENO, "error on sendto: %s\n", strerror(errno));
 		} else {
@@ -52,7 +52,7 @@ static int	send_icmp_message(Socket *sock, IcmpPayload *message, struct iphdr *i
 	err_value = sendto(sock->fd, (void *)sendbuff, sizeof(sendbuff), 0,
 		    (const struct sockaddr *)&sock->remote_addr,
 		    sock->addr_struct_size);
-	if (err_value < (int)sock->addr_struct_size) {
+	if (err_value < (int)sizeof(sendbuff)) {
 		if (err_value == -1) {
 			dprintf(STDERR_FILENO, "error on sendto: %s\n", strerror(errno));
 		} else {

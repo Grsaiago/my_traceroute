@@ -1,57 +1,88 @@
 #include "../include/my_ping.h"
 #include <netinet/in.h>
-#include <unistd.h>
+#include <sys/socket.h>
 
-static int set_socket_flags(int sock, ExecutionFlags *flags);
+static int	new_in_socket(struct sockaddr_in *local_addr, Socket *sock, ExecutionFlags *flags);
+static int	new_out_socket(struct sockaddr_in *remote_addr, Socket *sock, ExecutionFlags *flags);
+static int	set_in_socket_flags(int sock, ExecutionFlags *flags);
+static int	set_out_socket_flags(int sock, ExecutionFlags *flags);
 
-int	new_socket(Socket *res, struct sockaddr_in *remote_addr, ExecutionFlags *flags) {
-	int	sock;
+int	new_socket_pair(struct sockaddr_in *remote_addr, struct sockaddr_in *local_addr, SocketPair *sock_pair, ExecutionFlags *flags) {
 
-	// we don't need a raw socket because:
-	// https://sturmflut.github.io/linux/ubuntu/2015/01/17/unprivileged-icmp-sockets-on-linux/
-	// We actually do, because without it the kernel sets the ttl of the iphdr to 0
-	// to have it run without sudo, we need to run 'sudo setcap cap_net_raw+ep ./my_ping'
-	sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-	if (sock == -1) {
-		dprintf(STDERR_FILENO, "error on socket creation: %s\n", strerror(errno));
+
+	if (new_out_socket(remote_addr, &sock_pair->out_sock, flags) != 0) {
+		dprintf(STDERR_FILENO, "error on out_sock creation: %s\n", strerror(errno));
 		return (-1);
 	}
-	if (set_socket_flags(sock, flags) != 0) {
+	if (new_in_socket(local_addr, &sock_pair->in_sock, flags) != 0) {
+		dprintf(STDERR_FILENO, "error on in_sock creation: %s\n", strerror(errno));
 		return (-1);
 	}
-	res->fd = sock;
-	res->remote_addr = *remote_addr;
-	res->addr_struct_size = sizeof(struct sockaddr_in);
-	/*if (!flags->icmp) {*/
-	/*	res->remote_addr.sin_port = 5500;*/
-	/*	if (bind(sock, (struct sockaddr *)&res->remote_addr, sizeof(res->remote_addr)) == -1) {*/
-	/*		dprintf(STDERR_FILENO, "error on bind: %s", strerror(errno));*/
-	/*		return (-1);*/
-	/*	}*/
-	/*}*/
 	return (0);
 }
 
-static int set_socket_flags(int sock, ExecutionFlags *flags) {
-	int	value;
+static int	new_out_socket(struct sockaddr_in *remote_addr, Socket *sock, ExecutionFlags *flags) {
+	int	new_sock;
 
-	value = 1;
-	if (setsockopt(sock, IPPROTO_TP, IP_HDRINCL, &value, sizeof(int)) != 0) {
-		dprintf(STDERR_FILENO, "error on setsockopt IP_HDRINCL: %s\n", strerror(errno));
+	new_sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+	if (new_sock == -1) {
+		dprintf(STDERR_FILENO, "socket() failed for the out_socket: %s\n", strerror(errno));
 		return (-1);
 	}
-	if (flags->so_debug == true) {
+	if (set_out_socket_flags(new_sock, flags) != 0) {
+		return (-1);
+	}
+	sock->fd = new_sock;
+	sock->type = flags->out_socket_type;
+	sock->remote_addr = *remote_addr;
+	sock->addr_struct_size = sizeof(struct sockaddr_in);
+	return (0);
+}
+
+static int	new_in_socket(struct sockaddr_in *local_addr, Socket *sock, ExecutionFlags *flags) {
+	int	new_sock;
+
+	new_sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (new_sock == -1) {
+		dprintf(STDERR_FILENO, "socket() failed for the in_socket: %s\n", strerror(errno));
+		return (-1);
+	}
+	if (bind(new_sock, (struct sockaddr *)local_addr, sizeof(struct sockaddr_in)) != 0) {
+		dprintf(STDERR_FILENO, "bind() failed for the in_socket: %s\n", strerror(errno));
+		return (-1);
+	}
+	if (set_in_socket_flags(new_sock, flags) != 0) {
+		return (-1);
+	}
+	sock->fd = new_sock;
+	sock->type = ICMP_SOCK;
+	sock->remote_addr = *local_addr;
+	sock->addr_struct_size = sizeof(struct sockaddr_in);
+	return (0);
+}
+
+static int	set_in_socket_flags(int sock, ExecutionFlags *flags) {
+	int value;
+
+	if (flags->so_debug) {
 		value = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_DEBUG, &value, sizeof(int)) != 0) {
-			dprintf(STDERR_FILENO, "error on setsockopt SO_DEBUG: %s\n", strerror(errno));
+			dprintf(STDERR_FILENO, "error on in_sock setsockopt SO_DEBUG: %s\n", strerror(errno));
 			return (-1);
 		}
 	}
-	// set ttl to 1 or to specified by flag
-	value = flags->first_ttl;
-	if (setsockopt(sock, IPPROTO_IP, IP_TTL, &value, sizeof(int)) != 0) {
-		dprintf(STDERR_FILENO, "error on setsockopt IP_TTL: %s\n", strerror(errno));
-		return (-1);
+	return (0);
+}
+
+static int	set_out_socket_flags(int sock, ExecutionFlags *flags) {
+	int value;
+
+	if (flags->so_debug) {
+		value = 1;
+		if (setsockopt(sock, SOL_SOCKET, SO_DEBUG, &value, sizeof(int)) != 0) {
+			dprintf(STDERR_FILENO, "error on out_sock setsockopt SO_DEBUG: %s\n", strerror(errno));
+			return (-1);
+		}
 	}
 	return (0);
 }

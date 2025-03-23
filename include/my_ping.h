@@ -104,12 +104,11 @@ typedef struct s_PingPacketStats {
 
 typedef struct s_ProgramConf {
 	uint64_t	msg_seq;
-	Socket		main_socket;
 	ExecutionFlags	flags;
+	SocketPair	sock_pair;
 	PingPacketStats	pkt_stats;
 	char		*program_arg;
 	char		resolved_addr[INET6_ADDRSTRLEN];
-	bool		continue_execution;
 }	ProgramConf;
 
 typedef struct s_PrintMetrcis {
@@ -123,7 +122,9 @@ typedef struct s_PrintMetrcis {
 bool	check_user_permission(ProgramConf *conf);
 void	install_signal_handlers(void);
 void	initialize_program_conf(ProgramConf *conf);
-int	new_socket(Socket *res, struct sockaddr_in *remote_addr, ExecutionFlags *flags);
+int	new_socket_pair(struct sockaddr_in *remote_addr,
+		    struct sockaddr_in *local_addr, SocketPair *sock_pair,
+		    ExecutionFlags *flags);
 /* parse functions */
 int		parse_arguments(ProgramConf *conf, int argc, char *argv[]);
 // Performs dns lookup/ip validation for address using getaddrinfo and places found sockaddr_* in struct res

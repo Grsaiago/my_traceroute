@@ -1,10 +1,10 @@
 #include "../include/my_ping.h"
-#include <sys/time.h>
 
 bool my_ping_should_continue = true;
 
 int main(int argc, char *argv[]) {
-	struct sockaddr_in	socket_confs = {0};
+	struct sockaddr_in	remote_addr = {0};
+	struct sockaddr_in	local_addr;
 	ProgramConf		conf;
 
 	initialize_program_conf(&conf);
@@ -14,10 +14,15 @@ int main(int argc, char *argv[]) {
 		return (EXIT_FAILURE);
 	}
 	/*install_signal_handlers();*/
-	if (validate_or_resolve_address(&conf, (struct sockaddr *)&socket_confs) == -1) {
+	if (validate_or_resolve_address(&conf, (struct sockaddr *)&remote_addr) != 0) {
 		return (-1);
 	}
-	if (new_socket(&conf.main_socket, &socket_confs, &conf.flags) == -1) {
+	local_addr = (struct sockaddr_in) {
+		.sin_family = AF_INET,
+		.sin_addr.s_addr = INADDR_ANY,
+		.sin_port = 0,
+	};
+	if (new_socket_pair(&remote_addr, &local_addr, &conf.sock_pair, &conf.flags) != 0) {
 		return (-1);
 	}
 	event_loop(&conf);
@@ -38,9 +43,9 @@ int	event_loop(ProgramConf *conf) {
 		gettimeofday(&reply.sent_at, NULL);
 		err_value = send_message(conf, &message);
 		if (err_value != 0) {
-			continue;
+			return(-1);
 		}
-		recv_result = recv_message(&conf->main_socket, &reply);
+		recv_result = recv_message(&conf->sock_pair.in_sock, &reply);
 		gettimeofday(&reply.recv_at, NULL);
 		/*// if it didn't error_create a new message.*/
 		/*// If there was an error, we need to retry the same message.*/

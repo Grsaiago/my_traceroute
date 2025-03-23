@@ -1,4 +1,5 @@
 #include "../include/my_ping.h"
+#include <netinet/in.h>
 
 static UdpPayload	new_udp_message(ProgramConf *conf);
 static IcmpPayload	new_icmp_echo_message(ProgramConf *conf);
@@ -27,7 +28,7 @@ static UdpPayload	new_udp_message(ProgramConf *conf) {
 
 	message.udp = (struct udphdr) {
 		.len = sizeof(struct udphdr),
-		.dest = conf->main_socket.remote_addr.sin_addr.s_addr,
+		.dest = conf->sock_pair.out_sock.remote_addr.sin_addr.s_addr,
 	};
 	message.udp.check = calculate_udp_checksum(&message.udp);
 	return (message);
@@ -77,8 +78,24 @@ static void set_iphdr(ProgramConf *conf, struct iphdr *iphdr) {
 	*iphdr = (struct iphdr) {
 		/* .check is always filled by the kernel */
 		/* .tot_len is always filled by the kernel */
-		.saddr = 0,
-		.id = 0,
+		.version = 4,           // IPv4
+		.ihl = 5,               // Header length in 32-bit words (5 * 4 = 20 bytes)
+		.tos = 0,               // Type of service (default)
+		.tot_len = 0,           // Will be calculated or filled by the kernel
+		.id = htons(54321),     // Identification field (use a unique value)
+		.frag_off = 0,          // No fragmentation
+		.ttl = 1,               // Time-to-live (set to 1 to trigger ICMP Time Exceeded)
+		.check = 0,             // Will be calculated or filled by the kernel
+		.saddr = 0,             // Source IP (kernel will fill this in)
+		.daddr = conf->sock_pair.out_sock.remote_addr.sin_addr.s_addr
 	};
+	switch (conf->flags.out_socket_type) {
+		case (ICMP_SOCK):
+			iphdr->protocol = IPPROTO_ICMP;
+			break;
+		case (UDP_SOCK):
+			iphdr->protocol = IPPROTO_UDP;
+			break;
+	}
 	return ;
 }

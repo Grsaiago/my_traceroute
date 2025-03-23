@@ -2,7 +2,6 @@
 
 static int		recv_icmp_message(Socket *sock, IcmpReply *message);
 
-
 int recv_message(Socket *sock, IcmpReply *message) {
 	return (recv_icmp_message(sock, message));
 }

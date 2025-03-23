@@ -2,7 +2,6 @@
 
 void	initialize_program_conf(ProgramConf *conf) {
 	memset(conf, 0, sizeof(ProgramConf));
-	conf->continue_execution = true;
 	conf->msg_seq = -1;
 	/* initialize packet metrics */
 	conf->pkt_stats.rtt_max = DBL_MIN;
