@@ -39,12 +39,18 @@ typedef enum e_TracerouteMessagePayloadType {
 	TR_UDP_PAYLOAD,
 }	TracerouteMessagePayloadType;
 
+/*this timestamp will be used included in the packet's return
+ * as per rfc 792 (since it's within the 8 bytes limit)*/
 typedef struct s_IcmpPayload {
 	struct icmp	icmp;
+	struct timeval	timestamp;
 }	IcmpPayload;
 
+/*this timestamp will be used included in the packet's return
+ * as per rfc 792 (since it's within the 8 bytes limit)*/
 typedef struct s_UdpPayload {
 	struct udphdr	udp;
+	struct timeval	timestamp;
 }	UdpPayload;
 
 typedef union s_TracerouteMessagePayload {
@@ -59,11 +65,22 @@ typedef struct s_TracerouteMessage {
 }	TracerouteMessage;
 
 /* socket */
+typedef enum e_SocketType {
+	ICMP_SOCK,
+	UDP_SOCK,
+}	SocketType;
+
 typedef struct s_Socket {
 	int			fd;
+	SocketType		type;
 	struct sockaddr_in	remote_addr;
 	socklen_t		addr_struct_size;
 }	Socket;
+
+typedef struct s_SocketPair {
+	Socket	in_sock;
+	Socket	out_sock;
+}	SocketPair;
 
 /* traceroute program */
 #define DEFAULT_MAX_TTL 30
@@ -72,7 +89,7 @@ typedef struct s_ExecutionFlags {
 	bool		resolve_ip_name; // -n --no-ip-to-host-resolve
 	uint32_t	max_ttl; // -m --max-hops
 	uint32_t	first_ttl; // -f --first
-	bool		icmp; // -I --icmp
+	SocketType	out_socket_type; // -I --icmp
 	bool		so_debug; // -d --debug
 }	ExecutionFlags;
 

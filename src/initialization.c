@@ -11,6 +11,6 @@ void	initialize_program_conf(ProgramConf *conf) {
 	conf->flags.resolve_ip_name = true;
 	conf->flags.max_ttl = DEFAULT_MAX_TTL;
 	conf->flags.first_ttl = TR_STARTING_TTL;
-	conf->flags.icmp = false;
+	conf->flags.out_socket_type = UDP_SOCK;
 	conf->flags.so_debug = false;
 }

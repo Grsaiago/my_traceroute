@@ -47,7 +47,7 @@ static error_t	parser_func(int key, char *arg, struct argp_state *state) {
 			}
 			break ;
 		case ('I'):
-			conf->flags.icmp = true;
+			conf->flags.out_socket_type = ICMP_SOCK;
 			break ;
 		case ('d'):
 			conf->flags.so_debug = true;
