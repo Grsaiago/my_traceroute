@@ -7,7 +7,8 @@ SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror -Wpedantic -I./include
+# coverage docs: https://llvm.org/docs/CommandGuide/llvm-cov.html
+CFLAGS = -g -Wall -Wextra -Werror -Wpedantic --coverage -I./include
 
 
 .PHONY: all
