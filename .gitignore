@@ -6,6 +6,10 @@
 *.ko
 *.obj
 *.elf
+obj/
+
+# Coverage files
+coverage/
 
 # Linker output
 *.ilk
@@ -35,6 +39,8 @@
 *.i*86
 *.x86_64
 *.hex
+my_traceroute
+test_runner
 
 # Debug files
 *.dSYM/
@@ -51,4 +57,5 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-my_traceroute
+# doc files
+docs/
