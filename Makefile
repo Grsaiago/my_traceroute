@@ -6,10 +6,9 @@ OBJ_DIR = obj
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
-CC = gcc
-# coverage docs: https://llvm.org/docs/CommandGuide/llvm-cov.html
-CFLAGS = -g -Wall -Wextra -Werror -Wpedantic --coverage -I./include
-
+CC = clang
+# coverage docs: https://llvm.org/docs/CommandGuide/llvm-cov.html#show-command
+CFLAGS = -g -Wall -Wextra -Werror -Wpedantic -fprofile-instr-generate -fcoverage-mapping -I./include
 
 .PHONY: all
 all: help
@@ -50,3 +49,16 @@ t: $(NAME) ## Runs the binary for test
 .PHONY: docs
 docs: ## Generates documentation using Doxygen
 	doxygen Doxyfile
+
+.PHONY: cov-show
+cov-show: $(NAME) merge-prof ## Show code coverage in regions (the binary must've been executed at least once)
+	llvm-cov show -instr-profile=profile_data ./$(NAME)
+
+.PHONY: cov-report
+cov-report: $(NAME) merge-prof ## Show code coverage report (the binary must've been executed at least once)
+	llvm-cov report -instr-profile=profile_data ./$(NAME)
+
+
+.PHONY: merge-prof
+merge-prof: 
+	llvm-profdata merge default.profraw -o profile_data
