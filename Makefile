@@ -45,3 +45,7 @@ re: fclean build ## Rebuilds the binary
 .PHONY: t
 t: $(NAME) ## Runs the binary for test
 	@./$(NAME)
+
+.PHONY: docs
+docs: ## Generates documentation using Doxygen
+	doxygen Doxyfile
