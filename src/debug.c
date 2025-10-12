@@ -1,5 +1,16 @@
 #include "my_traceroute.h"
 
+/**
+ * @brief Prints the values of the ExecutionFlags structure for debugging
+ * purposes.
+ *
+ * This function outputs the contents of the given ExecutionFlags struct to
+ * stdout, displaying each field with its name and value. Useful for debugging
+ * and verifying the state of execution flags.
+ *
+ * @param flags Pointer to an @c ExecutionFlags structure whose fields will be
+ * printed.
+ */
 void debug_execution_flags(ExecutionFlags *flags) {
 	printf("flags:\n");
 	printf("\tso_debug:			%d\n", flags->so_debug);
