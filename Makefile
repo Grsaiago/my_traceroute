@@ -7,8 +7,7 @@ SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Werror
-LINK_FLAGS = -lm
+CFLAGS = -g -Wall -Wextra -Werror -Wpedantic -I./include
 
 
 .PHONY: all
@@ -26,7 +25,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(NAME): $(OBJS)
-	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LINK_FLAGS)
+	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 
 .PHONY: build

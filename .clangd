@@ -1,3 +1,20 @@
 CompileFlags:
-  Add: [-Wall, -Wextra, -Werror]
   Compiler: gcc
+  Add:
+    - -Wall
+    - -Wextra
+    - -Werror
+    - -Wpedantic
+    - -I/home/gsaiago/estudo/c/my_traceroute/include
+
+Style:
+  QuotedHeaders: "include/.*"
+
+Hover:
+  ShowAKA: true
+
+Diagnostics:
+  UnusedIncludes: Strict
+
+Documentation:
+  CommentFormat: Doxygen
