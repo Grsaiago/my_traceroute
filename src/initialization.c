@@ -16,7 +16,7 @@ static void initialize_program_flags(ExecutionFlags *flags);
  * - @ref DEFAULT_PROBE_SEND_INTERVAL
  * - @ref DEFAULT_PROBES_PER_HOP
  *
- * @param conf Pointer to the @c ProgramConf structure to initialize.
+ * @param conf Pointer to the @c ProgramConf structure to be initialized.
  */
 void initialize_program_conf(ProgramConf *conf) {
 	memset(conf, 0, sizeof(ProgramConf));

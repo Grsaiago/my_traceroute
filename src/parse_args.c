@@ -13,6 +13,20 @@ static error_t parse_queries(ProgramConf *conf, char *arg);
 // https://www.gnu.org/software/libc/manual/html_node/Argp-Global-Variables.html
 const char *argp_program_version = "1.0";
 
+/**
+ * @brief Parses command-line arguments and populates the ProgramConf structure.
+ *
+ * This function uses the argp library to parse command-line options and
+ * arguments, filling in the provided ProgramConf structure with the parsed
+ * values. It supports various options such as debug mode, port number,
+ * TTL settings, timeouts, and probe counts.
+ *
+ * @param conf Pointer to a ProgramConf structure to be populated with parsed
+ * values.
+ * @param argc The count of command-line arguments.
+ * @param argv The array of command-line argument strings.
+ *
+ */
 int parse_arguments(ProgramConf *conf, int argc, char *argv[]) {
 
 	static struct argp_option options[] = {
