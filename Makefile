@@ -70,7 +70,6 @@ build: $(NAME) $(COVER_DIR) ## Builds the binary
 .PHONY: test-build
 test-build: $(TEST_BIN) ## Builds the test binary
 
-
 .PHONY: clean
 clean: ## Cleans transitive dependencies
 	@rm -f $(OBJS)
