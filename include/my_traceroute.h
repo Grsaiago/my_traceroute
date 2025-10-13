@@ -9,6 +9,7 @@
 #define MY_TRACEROUTE_H_
 
 #include <argp.h>
+#include <errno.h>
 #include <error.h>
 #include <limits.h>
 #include <netinet/in.h>
@@ -16,6 +17,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+/**
+ *  @brief Anm enumeration representing the IP protocol version (IPv4 or IPv6)
+ */
+typedef enum e_IpProtocol { IPV4 = AF_INET, IPV6 = AF_INET6 } IpProtocol;
 
 /**
  *  @brief A structure representing a network socket, be it ICMP ot UDP
@@ -41,6 +49,10 @@ typedef struct s_Socket {
 	 * @brief the size of the underlying sockaddr_storage in use
 	 */
 	socklen_t               addr_struct_size;
+	/**
+	 * @brief if it's an IPv4 or IPv6 socket
+	 */
+	IpProtocol              ip_protocol;
 } Socket;
 
 /**
@@ -142,6 +154,14 @@ typedef struct s_ExecutionFlags {
 	 * Number of probes sent per hop
 	 */
 	uint8_t  probes_per_hop;
+
+	/**
+	 * @brief `-P`, `--protocol`
+	 *
+	 * The IP protocol version to use (IPv4 or IPv6)
+	 */
+	IpProtocol ip_protocol;
+
 } ExecutionFlags;
 
 // typedef struct s_Probe {

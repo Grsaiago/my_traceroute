@@ -31,6 +31,7 @@ static void initialize_program_flags(ExecutionFlags *flags) {
 	flags->probe_response_timeout = DEFAULT_PROBE_RESPONSE_TIMEOUT;
 	flags->probe_send_interval = DEFAULT_PROBE_SEND_INTERVAL;
 	flags->probes_per_hop = DEFAULT_PROBES_PER_HOP;
+	flags->ip_protocol = IPV4;
 	// TODO: Inintialize the probe array in here
 
 	return;

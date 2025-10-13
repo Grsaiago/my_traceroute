@@ -8,6 +8,7 @@ static error_t parse_max_ttl(ProgramConf *conf, char *arg);
 static error_t parse_wait(ProgramConf *conf, char *arg);
 static error_t parse_sendwait(ProgramConf *conf, char *arg);
 static error_t parse_queries(ProgramConf *conf, char *arg);
+static error_t parse_ipv6(ProgramConf *conf);
 
 // argp global variables as per:
 // https://www.gnu.org/software/libc/manual/html_node/Argp-Global-Variables.html
@@ -61,13 +62,17 @@ int parse_arguments(ProgramConf *conf, int argc, char *argv[]) {
 	     .key = 'q',
 	     .arg = "<PROBES_PER_HOP>",
 	     .doc = "the number of probes to send at each hop"},
+	    {.name = "ipv6",
+	     .key = '6',
+	     .arg = NULL,
+	     .doc = "use ipv6 instead of ipv4"},
 	    {0}
 	};
 
 	const struct argp argp = {
 	    .options = options,
 	    .parser = parser_func,
-	    .args_doc = "<HOST | IPV4 | IPV6>",
+	    .args_doc = "<HOST | IP>",
 	    .doc = "My own implementation of the traceroute tool",
 	};
 
@@ -141,6 +146,11 @@ static error_t parse_queries(ProgramConf *conf, char *arg) {
 	return (0);
 }
 
+static error_t parse_ipv6(ProgramConf *conf) {
+	conf->flags.ip_protocol = IPV6;
+	return (0);
+}
+
 static error_t parser_func(int key, char *arg, struct argp_state *state) {
 	ProgramConf *conf = (ProgramConf *)state->input;
 
@@ -160,6 +170,8 @@ static error_t parser_func(int key, char *arg, struct argp_state *state) {
 		return (parse_sendwait(conf, arg));
 	case 'q':
 		return (parse_queries(conf, arg));
+	case '6':
+		return (parse_ipv6(conf));
 	case (ARGP_KEY_ARG):
 		if (state->arg_num >= 1) {
 			argp_usage(state);
