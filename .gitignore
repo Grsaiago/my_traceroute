@@ -11,6 +11,9 @@ obj/
 # Coverage files
 coverage/
 
+# Profiling files
+profiling/
+
 # Linker output
 *.ilk
 *.map
