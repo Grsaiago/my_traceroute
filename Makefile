@@ -111,6 +111,14 @@ cov-report: $(NAME) merge-prof ## Show code coverage report (the binary must've 
 merge-prof:
 	llvm-profdata merge $(COVER_DIR)/$(RAW_PROFILE_FILE) -o ./$(COVER_DIR)/$(PROFILE_FILE)
 
-.PHONY: instrument-setup
-instrument-setup: $(PROFILING_DIR) ## Exports LLVM XRay env variables and creates profiling dir
+.PHONY: profiling-setup
+profiling-setup: $(PROFILING_DIR) ## Exports LLVM XRay env variables and creates profiling dir
 	@echo 'Profiling dir created, please run - export XRAY_OPTIONS="patch_premain=true xray_naive_log=true xray_logfile_base=$(PROFILING_DIR)/xray_log." -'
+
+.PHONY: profiling-graph
+profiling-graph: ## Take all llvm xray profiling logs and generate a png graph
+	@llvm-xray graph ./profiling/xray_log.my_traceroute.* -color-edges=count -edge-label=count -color-vertices=sum -vertex-label=sum | dot -Tpng > profiling_graph.png
+
+.PHONY: profiling-report
+profiling-report: ## Take all llvm xray profiling logs and generate a report
+	 llvm-xray account -instr_map=./my_traceroute profiling/xray_log.my_traceroute.*
