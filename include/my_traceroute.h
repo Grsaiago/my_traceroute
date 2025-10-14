@@ -163,12 +163,15 @@ typedef struct s_ProgramConf {
 } ProgramConf;
 
 // initialize functions
-void initialize_program_conf(ProgramConf *conf);
+void initialize_program_conf(ProgramConf *conf)
+    __attribute__((xray_always_instrument));
 
 // parse functions
-int parse_arguments(ProgramConf *conf, int argc, char *argv[]);
+int parse_arguments(ProgramConf *conf, int argc, char *argv[])
+    __attribute__((xray_always_instrument));
 
 // debug functions
-void debug_execution_flags(ExecutionFlags *flags);
+void debug_execution_flags(ExecutionFlags *flags)
+    __attribute__((xray_always_instrument));
 
 #endif // MY_TRACEROUTE_H_

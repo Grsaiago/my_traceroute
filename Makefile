@@ -6,10 +6,13 @@ SRC_DIR = src
 OBJ_DIR = obj
 COVER_DIR = coverage
 TEST_DIR = tests
+PROFILING_DIR = profiling
 
 # files used for coverage
 RAW_PROFILE_FILE = my_traceroute.profraw
 PROFILE_FILE = my_traceourte.profdata
+
+# LLVM Xray variables
 
 # main object/source files
 SRCS = $(wildcard $(SRC_DIR)/*.c)
@@ -21,11 +24,13 @@ CC = clang
 
 # coverage docs: https://llvm.org/docs/CommandGuide/llvm-cov.html#show-command
 # coverage docs2: https://llvm.org/docs/CommandGuide/llvm-profdata.html#id1
+# -fxray-instrument: https://llvm.org/docs/XRay.html
 CFLAGS = -g \
 	 -Wall \
 	 -Wextra \
 	 -Werror \
 	 -Wpedantic \
+	 -fxray-instrument \
 	 -fprofile-instr-generate=$(COVER_DIR)/$(RAW_PROFILE_FILE) \
 	 -fcoverage-mapping \
 	 -I./include
@@ -49,6 +54,9 @@ $(COVER_DIR):
 
 $(TEST_DIR):
 	@mkdir -p $(TEST_DIR)
+
+$(PROFILING_DIR):
+	@mkdir -p $(PROFILING_DIR)
 
 ## formula to compile .c into .o files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
@@ -102,3 +110,7 @@ cov-report: $(NAME) merge-prof ## Show code coverage report (the binary must've 
 .PHONY: merge-prof
 merge-prof:
 	llvm-profdata merge $(COVER_DIR)/$(RAW_PROFILE_FILE) -o ./$(COVER_DIR)/$(PROFILE_FILE)
+
+.PHONY: instrument-setup
+instrument-setup: $(PROFILING_DIR) ## Exports LLVM XRay env variables and creates profiling dir
+	@echo 'Profiling dir created, please run - export XRAY_OPTIONS="patch_premain=true xray_naive_log=true xray_logfile_base=$(PROFILING_DIR)/xray_log." -'
