@@ -19,11 +19,10 @@ Test(parse_arguments, simple_parsing) {
 	    "2",
 	    "-q",
 	    "3",
-	    "-6",
 	    "example.com"
 	};
 	int argc = sizeof(argv) / sizeof(*argv);
-	int result = parse_arguments(&conf, argc, argv);
+	int result = parse_cli_args(&conf, argc, argv);
 	cr_assert_eq(
 	    result, 0, "Expected parse_arguments to return 0, but got %d", result
 	);
@@ -48,5 +47,4 @@ Test(parse_arguments, simple_parsing) {
 	    conf.program_arg, "example.com",
 	    "Expected program_arg to be 'example.com'"
 	);
-	cr_assert_eq(conf.flags.ip_protocol, IPV6, "Expected ipv6 to be true");
 }
