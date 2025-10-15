@@ -10,5 +10,5 @@ int main(int argc, char **argv) {
 	initialize_execution_flags(&conf.flags);
 	parse_cli_args(&conf, argc, argv);
 	initialize_program_conf(&conf);
-	debug_execution_flags(&conf.flags);
+	delete_program_conf(&conf);
 }

@@ -7,9 +7,12 @@ UdpSocket *create_send_socket(ExecutionFlags *flags) {
 	int        sockfd;
 	UdpSocket *udpSock;
 
-	sockfd = socket(AF_INET | SOCK_NONBLOCK | SOCK_CLOEXEC, SOCK_DGRAM, 0);
+	sockfd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
 	if (sockfd < 0) {
-		dprintf(STDERR_FILENO, "error creating socket: %s", strerror(errno));
+		dprintf(
+		    STDERR_FILENO, "error creating UdpSocket socket: %s",
+		    strerror(errno)
+		);
 		return (NULL);
 	}
 	if (set_send_socket_flags(sockfd, flags) != 0) {
@@ -55,7 +58,10 @@ IcmpSocket *create_recv_socket(ExecutionFlags *flags) {
 	sockfd =
 	    socket(AF_INET, SOCK_RAW | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_ICMP);
 	if (sockfd < 0) {
-		dprintf(STDERR_FILENO, "error creating socket: %s", strerror(errno));
+		dprintf(
+		    STDERR_FILENO, "error creating IcmpSocket socket: %s",
+		    strerror(errno)
+		);
 		return NULL;
 	}
 	if (set_recv_socket_flags(sockfd, flags) != 0) {
@@ -66,7 +72,7 @@ IcmpSocket *create_recv_socket(ExecutionFlags *flags) {
 	icmpSock = malloc(sizeof(UdpSocket));
 	if (icmpSock == NULL) {
 		dprintf(
-		    STDERR_FILENO, "error allocating memory for UdpSocket: %s\n",
+		    STDERR_FILENO, "error allocating memory for IcmpSocket: %s\n",
 		    strerror(errno)
 		);
 		close(sockfd);
