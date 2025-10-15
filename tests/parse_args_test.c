@@ -22,7 +22,7 @@ Test(parse_arguments, simple_parsing) {
 	    "example.com"
 	};
 	int argc = sizeof(argv) / sizeof(*argv);
-	int result = parse_arguments(&conf, argc, argv);
+	int result = parse_cli_args(&conf, argc, argv);
 	cr_assert_eq(
 	    result, 0, "Expected parse_arguments to return 0, but got %d", result
 	);

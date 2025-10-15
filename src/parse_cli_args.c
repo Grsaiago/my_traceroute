@@ -27,7 +27,7 @@ const char *argp_program_version = "1.0";
  * @param argv The array of command-line argument strings.
  *
  */
-int parse_arguments(ProgramConf *conf, int argc, char *argv[]) {
+int parse_cli_args(ProgramConf *conf, int argc, char *argv[]) {
 
 	static struct argp_option options[] = {
 	    {.name = "debug",
@@ -67,7 +67,7 @@ int parse_arguments(ProgramConf *conf, int argc, char *argv[]) {
 	const struct argp argp = {
 	    .options = options,
 	    .parser = parser_func,
-	    .args_doc = "<HOST | IPV4 | IPV6>",
+	    .args_doc = "<HOST | IP>",
 	    .doc = "My own implementation of the traceroute tool",
 	};
 

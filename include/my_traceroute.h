@@ -9,18 +9,25 @@
 #define MY_TRACEROUTE_H_
 
 #include <argp.h>
+#include <arpa/inet.h>
+#include <errno.h>
 #include <error.h>
 #include <limits.h>
+#include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 /**
- *  @brief A structure representing a network socket, be it ICMP ot UDP
+ *  @brief A structure representing a UDP socket
  */
-typedef struct s_Socket {
+typedef struct s_UdpSocket {
 	/**
 	 * @brief the socket file descriptior
 	 */
@@ -30,18 +37,36 @@ typedef struct s_Socket {
 	 */
 	struct sockaddr_storage remote_addr;
 	/**
-	 * @brief a pointer to the internal sockstorage if it's ipv4
+	 * @brief a pointer to the internal sockstorage
 	 */
 	struct sockaddr_in     *ipv4_addr;
-	/**
-	 * @brief a pointer to the internal sockstorage if it's ipv6
-	 */
-	struct sockaddr_in6    *ipv6_addr;
 	/**
 	 * @brief the size of the underlying sockaddr_storage in use
 	 */
 	socklen_t               addr_struct_size;
-} Socket;
+} UdpSocket;
+
+/**
+ * @brief A structure representing an ICMP socket
+ */
+typedef struct s_IcmpSocket {
+	/**
+	 * @brief the socket file descriptior
+	 */
+	int                     fd;
+	/**
+	 * @brief the parsed address of the remote host, be it ipv4 or ipv6
+	 */
+	struct sockaddr_storage remote_addr;
+	/**
+	 * @brief a pointer to the internal sockstorage
+	 */
+	struct sockaddr_in     *ipv4_addr;
+	/**
+	 * @brief the size of the underlying sockaddr_storage in use
+	 */
+	socklen_t               addr_struct_size;
+} IcmpSocket;
 
 /**
  * @brief Default debug mode flag.
@@ -142,29 +167,54 @@ typedef struct s_ExecutionFlags {
 	 * Number of probes sent per hop
 	 */
 	uint8_t  probes_per_hop;
+
 } ExecutionFlags;
 
-// typedef struct s_Probe {
-// 	// TODO: Define the fields
-// } Probe;
+typedef struct s_Probe {
+	struct sockaddr_in sender_addr;
+	char              *sender_addr_str;
+} Probe;
 
 typedef struct s_ProgramConf {
 	ExecutionFlags flags;
 	char          *program_arg;
 	uint64_t       icmp_msg_seq;
-	// TODO: Probe array in here
-	Socket         send_socket;
-	Socket         recv_socket;
+	UdpSocket     *send_socket;
+	IcmpSocket    *recv_socket;
 	char           resolved_server_addr[INET6_ADDRSTRLEN];
+	Probe         *probes;
 } ProgramConf;
 
 // initialize functions
-void initialize_program_conf(ProgramConf *conf);
+void initialize_execution_flags(ExecutionFlags *flags)
+    __attribute__((xray_always_instrument));
+
+int initialize_program_conf(ProgramConf *conf)
+    __attribute__((xray_always_instrument));
+
+UdpSocket  *create_send_socket(ExecutionFlags *flags);
+IcmpSocket *create_recv_socket(ExecutionFlags *flags);
 
 // parse functions
-int parse_arguments(ProgramConf *conf, int argc, char *argv[]);
+int parse_cli_args(ProgramConf *conf, int argc, char *argv[])
+    __attribute__((xray_always_instrument));
 
 // debug functions
-void debug_execution_flags(ExecutionFlags *flags);
+void debug_execution_flags(ExecutionFlags *flags)
+    __attribute__((xray_always_instrument));
 
+void debug_program_conf(ProgramConf *conf)
+    __attribute__((xray_always_instrument));
+
+// free functions
+void delete_program_conf(ProgramConf *conf)
+    __attribute__((xray_always_instrument));
+
+void delete_icmp_socket(IcmpSocket *socket)
+    __attribute__((xray_always_instrument));
+
+void delete_udp_socket(UdpSocket *socket)
+    __attribute__((xray_always_instrument));
+
+void delete_probe(Probe *probe) __attribute__((xray_always_instrument));
 #endif // MY_TRACEROUTE_H_
