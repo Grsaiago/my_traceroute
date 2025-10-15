@@ -3,19 +3,34 @@
 static int set_send_socket_flags(int sock, ExecutionFlags *flags);
 static int set_recv_socket_flags(int sock, ExecutionFlags *flags);
 
-int create_send_socket(ExecutionFlags *flags) {
-	int sockfd;
+UdpSocket *create_send_socket(ExecutionFlags *flags) {
+	int        sockfd;
+	UdpSocket *udpSock;
 
 	sockfd = socket(AF_INET | SOCK_NONBLOCK | SOCK_CLOEXEC, SOCK_DGRAM, 0);
 	if (sockfd < 0) {
 		dprintf(STDERR_FILENO, "error creating socket: %s", strerror(errno));
-		return (-1);
+		return (NULL);
 	}
 	if (set_send_socket_flags(sockfd, flags) != 0) {
 		close(sockfd);
-		return (-1);
+		return (NULL);
 	}
-	return (sockfd);
+
+	udpSock = malloc(sizeof(UdpSocket));
+	if (udpSock == NULL) {
+		dprintf(
+		    STDERR_FILENO, "error allocating memory for UdpSocket: %s\n",
+		    strerror(errno)
+		);
+		close(sockfd);
+		return (NULL);
+	}
+
+	*udpSock = (UdpSocket){
+	    .fd = sockfd,
+	};
+	return (udpSock);
 }
 
 static int set_send_socket_flags(int sock, ExecutionFlags *flags) {
@@ -33,20 +48,35 @@ static int set_send_socket_flags(int sock, ExecutionFlags *flags) {
 	return (0);
 }
 
-int create_recv_socket(ExecutionFlags *flags) {
-	int sockfd;
+IcmpSocket *create_recv_socket(ExecutionFlags *flags) {
+	int         sockfd;
+	IcmpSocket *icmpSock;
 
 	sockfd =
 	    socket(AF_INET, SOCK_RAW | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_ICMP);
 	if (sockfd < 0) {
 		dprintf(STDERR_FILENO, "error creating socket: %s", strerror(errno));
-		return (-1);
+		return NULL;
 	}
 	if (set_recv_socket_flags(sockfd, flags) != 0) {
 		close(sockfd);
-		return (-1);
+		return NULL;
 	}
-	return (0);
+
+	icmpSock = malloc(sizeof(UdpSocket));
+	if (icmpSock == NULL) {
+		dprintf(
+		    STDERR_FILENO, "error allocating memory for UdpSocket: %s\n",
+		    strerror(errno)
+		);
+		close(sockfd);
+		return (NULL);
+	}
+
+	*icmpSock = (IcmpSocket){
+	    .fd = sockfd,
+	};
+	return (icmpSock);
 }
 
 static int set_recv_socket_flags(int sock, ExecutionFlags *flags) {

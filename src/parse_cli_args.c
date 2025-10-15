@@ -27,7 +27,7 @@ const char *argp_program_version = "1.0";
  * @param argv The array of command-line argument strings.
  *
  */
-int parse_arguments(ProgramConf *conf, int argc, char *argv[]) {
+int parse_cli_args(ProgramConf *conf, int argc, char *argv[]) {
 
 	static struct argp_option options[] = {
 	    {.name = "debug",
