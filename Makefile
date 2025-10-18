@@ -25,7 +25,7 @@ CC = clang
 # coverage docs: https://llvm.org/docs/CommandGuide/llvm-cov.html#show-command
 # coverage docs2: https://llvm.org/docs/CommandGuide/llvm-profdata.html#id1
 # -fxray-instrument: https://llvm.org/docs/XRay.html
-CFLAGS = -g \
+CFLAGS = -gdwarf-4 \
 	 -Wall \
 	 -Wextra \
 	 -Werror \
