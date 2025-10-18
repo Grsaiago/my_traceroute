@@ -17,6 +17,7 @@ void delete_program_conf(ProgramConf *conf) {
 			delete_probe(&conf->probes[i]);
 		}
 		free(conf->probes);
+		conf->probes = NULL;
 	}
 	if (conf->send_socket != NULL) {
 		delete_udp_socket(conf->send_socket);

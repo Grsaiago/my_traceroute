@@ -10,7 +10,7 @@ UdpSocket *create_send_socket(ExecutionFlags *flags) {
 	sockfd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
 	if (sockfd < 0) {
 		dprintf(
-		    STDERR_FILENO, "error creating UdpSocket socket: %s",
+		    STDERR_FILENO, "error creating UdpSocket socket: %s\n",
 		    strerror(errno)
 		);
 		return (NULL);
@@ -59,7 +59,7 @@ IcmpSocket *create_recv_socket(ExecutionFlags *flags) {
 	    socket(AF_INET, SOCK_RAW | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_ICMP);
 	if (sockfd < 0) {
 		dprintf(
-		    STDERR_FILENO, "error creating IcmpSocket socket: %s",
+		    STDERR_FILENO, "error creating IcmpSocket socket: %s\n",
 		    strerror(errno)
 		);
 		return NULL;
